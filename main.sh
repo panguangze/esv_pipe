@@ -1,27 +1,27 @@
 #!/bin/bash
-SVABA=/home/xuedowang2/app/conda/envs/py37/bin/svaba
-CONFIGMANTA=/home/xuedowang2/app/conda/envs/py27/bin/configManta.py
-SAMTOOLS=/home/xuedowang2/app/samtools/bin/samtools
-BCFTOOLS=/home/xuedowang2/app/conda/envs/py37/bin/bcftools
-LUMPY_EXPRESS=/scratch/project/cs_shuaicli/software/lumpy-sv/bin/lumpyexpress
-SVTYPER=/home/xuedowang2/app/conda/envs/py27/bin/svtyper
-SURVIVOR=/scratch/project/cs_shuaicli/software/LOCAL_SURVIVOR/SURVIVOR/Debug/SURVIVOR
-SCRIPTS=/home/xuedowang2/scratch/tibet_t2t/high_cov_tibet/sv_pipe/esv_pipe/scripts
+SVABA=/home/grads/gzpan2/apps/svaba/bin/svaba
+CONFIGMANTA=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/bin/configManta.py
+SAMTOOLS=/home/grads/gzpan2/apps/samtools/bin/samtools
+BCFTOOLS=/home/grads/gzpan2/apps/bcftools/bin/bcftools
+LUMPY_EXPRESS=/home/grads/gzpan2/apps/lumpy-sv/bin/lumpyexpress
+SVTYPER=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/bin/svtyper
+SCRIPTS=/public/panguangze/giab/esv_pipe/scripts
+SURVIVOR=/home/grads/gzpan2/apps/SURVIVOR/Debug/SURVIVOR
 EXTRACT_HAIR=/home/grads/gzpan2/apps/extractHairs/build/ExtractHAIRs
 SPECHAP=/home/grads/gzpan2/apps/SpecHap/build/SpecHap
-ESplitReads_BwaMem=/scratch/project/cs_shuaicli/software/lumpy-sv/scripts/extractSplitReads_BwaMem
-DELLY=/scratch/project/cs_shuaicli/software/delly/delly
-PYTHON3=/home/xuedowang2/app/conda/envs/py37/bin/python
-PYTHON2=/home/xuedowang2/app/conda/envs/py27/bin/python
-BGZIP=/home/xuedowang2/app/conda/envs/py36/bin/bgzip
-TABIX=/home/xuedowang2/app/conda/envs/py36/bin/tabix
+ESplitReads_BwaMem=/home/grads/gzpan2/apps/lumpy-sv/scripts/extractSplitReads_BwaMem
+DELLY=/home/grads/gzpan2/apps/delly/delly
+PYTHON3=/home/grads/gzpan2/apps/miniconda3/envs/cityu/bin/python
+PYTHON2=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/bin/python2
+BGZIP=/home/grads/gzpan2/apps/libhts/bin/bgzip
+TABIX=/home/grads/gzpan2/apps/libhts/bin/tabix
 #GRIDSS=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/share/gridss-2.8.0-0/gridss.jar
 bam=$1
 ref=$2
 out_dir=$3
 threads=$4
-sample=$5
-# snp_vcf=$5
+sample=$6
+snp_vcf=$5
 bam_filename="$(basename -- $bam)"
 if [ ! -d $out_dir ]; then
   mkdir $out_dir
@@ -45,26 +45,26 @@ fi
 #   $SAMTOOLS index $bam -@ $threads
 # fi
 # # svaba
-# $SVABA run -t $bam -G $ref -a $out_dir/svaba/svaba --read-tracking --germline -p $threads
-# cp $out_dir/svaba/svaba.svaba.sv.vcf  $out_dir/svaba/svaba.svtyper.sv.vcf
-# $PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/svaba/svaba.svtyper.sv.vcf > $out_dir/svaba/svaba.adjusted.vcf
-# # manta
-# $CONFIGMANTA --bam $bam --referenceFasta $ref --runDir $out_dir/manta --generateEvidenceBam
-# $out_dir/manta/runWorkflow.py -m local -j $threads -g 100
-# gunzip $out_dir/manta/results/variants/diploidSV.vcf.gz
-# cp $out_dir/manta/results/variants/diploidSV.vcf  $out_dir/manta/manta.svtyper.vcf
-# $PYTHON3 $SCRIPTS/parse.py --manta -v $out_dir/manta/manta.svtyper.vcf -b $out_dir/manta/results/evidence/evidence_0.$bam_filename -o $out_dir/manta/manta.evidence.vcf
-# $PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/manta/manta.evidence.vcf > $out_dir/manta/manta.adjusted.vcf
-# # lumpy
-# $SAMTOOLS view -uF 0x0002 $bam | $SAMTOOLS view -uF 0x100 - | $SAMTOOLS view -uF 0x0004 - | $SAMTOOLS view -uF 0x0008 - | $SAMTOOLS view -bF 0x0400 - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.discordant.sort.bam
-# $SAMTOOLS view -h $bam | $ESplitReads_BwaMem -i stdin | $SAMTOOLS view -Sb - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.sr.sort.bam
-# $LUMPY_EXPRESS -B $bam -S $out_dir/lumpy/lumpy.sr.sort.bam -D $out_dir/lumpy/lumpy.discordant.sort.bam -o $out_dir/lumpy/lumpy.vcf
-# $PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.evidence.vcf
-# $SVTYPER -B $bam -i $out_dir/lumpy/lumpy.evidence.vcf > $out_dir/lumpy/lumpy.svtyper.vcf
-# $PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/lumpy/lumpy.svtyper.vcf > $out_dir/lumpy/lumpy.adjusted2.vcf
-# $PYTHON3 $SCRIPTS/parse2.py -v $out_dir/lumpy/lumpy.adjusted2.vcf --lumpy -o $out_dir/lumpy/lumpy.adjusted.vcf
-# # trans to BND format
-# $PYTHON3 $SCRIPTS/trans_to_BND_format.py -v $out_dir/lumpy/lumpy.adjusted.vcf -f $ref -o $out_dir/lumpy/lumpy.adjusted.BND.vcf
+$SVABA run -t $bam -G $ref -a $out_dir/svaba/svaba --read-tracking --germline -p $threads
+cp $out_dir/svaba/svaba.svaba.sv.vcf  $out_dir/svaba/svaba.svtyper.sv.vcf
+$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/svaba/svaba.svtyper.sv.vcf > $out_dir/svaba/svaba.adjusted.vcf
+# manta
+$CONFIGMANTA --bam $bam --referenceFasta $ref --runDir $out_dir/manta --generateEvidenceBam
+$out_dir/manta/runWorkflow.py -m local -j $threads -g 100
+gunzip $out_dir/manta/results/variants/diploidSV.vcf.gz
+cp $out_dir/manta/results/variants/diploidSV.vcf  $out_dir/manta/manta.svtyper.vcf
+$PYTHON3 $SCRIPTS/parse.py --manta -v $out_dir/manta/manta.svtyper.vcf -b $out_dir/manta/results/evidence/evidence_0.$bam_filename -o $out_dir/manta/manta.evidence.vcf
+$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/manta/manta.evidence.vcf > $out_dir/manta/manta.adjusted.vcf
+# lumpy
+$SAMTOOLS view -uF 0x0002 $bam | $SAMTOOLS view -uF 0x100 - | $SAMTOOLS view -uF 0x0004 - | $SAMTOOLS view -uF 0x0008 - | $SAMTOOLS view -bF 0x0400 - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.discordant.sort.bam
+$SAMTOOLS view -h $bam | $ESplitReads_BwaMem -i stdin | $SAMTOOLS view -Sb - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.sr.sort.bam
+$LUMPY_EXPRESS -B $bam -S $out_dir/lumpy/lumpy.sr.sort.bam -D $out_dir/lumpy/lumpy.discordant.sort.bam -o $out_dir/lumpy/lumpy.vcf
+$PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.evidence.vcf
+$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.evidence.vcf > $out_dir/lumpy/lumpy.svtyper.vcf
+$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/lumpy/lumpy.svtyper.vcf > $out_dir/lumpy/lumpy.adjusted2.vcf
+$PYTHON3 $SCRIPTS/parse2.py -v $out_dir/lumpy/lumpy.adjusted2.vcf --lumpy -o $out_dir/lumpy/lumpy.adjusted.vcf #fix _2 have no reads error
+# trans to BND format 
+$PYTHON3 $SCRIPTS/trans_to_BND_format.py -v $out_dir/lumpy/lumpy.adjusted.vcf -f $ref -o $out_dir/lumpy/lumpy.adjusted.BND.vcf
 
 
 #delly
