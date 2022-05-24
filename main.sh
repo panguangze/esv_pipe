@@ -94,8 +94,8 @@ $PYTHON2 $SCRIPTS/combine_combined.py $out_dir/survivor.sort.vcf $sample $out_di
 $BGZIP -f $out_dir/combined.genotyped.vcf
 $BCFTOOLS sort $out_dir/combined.genotyped.vcf.gz -Oz > $out_dir/combined.genotyped.sort.vcf.gz
 $TABIX -f $out_dir/combined.genotyped.sort.vcf.gz
-#$BCFTOOLS concat -a $out_dir/combined.genotyped.sort.vcf.gz $snp_vcf -Oz -o $out_dir/all.vcf.gz
-#$TABIX $out_dir/all.vcf.gz
-#$EXTRACT_HAIR --bam $bam --vcf $out_dir/all.vcf.gz --out $out_dir/ext.lst --breakends 1 --mate_at_same 1 --support_read_tag READNAMES --contigs chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY
-#sort -n -k3 $out_dir/ext.lst > $out_dir/ext.sorted.lst
-#$SPECHAP -v $out_dir/all.vcf.gz -f $out_dir/ext.sorted.lst -o $out_dir/spec.vcf -p ngs
+$BCFTOOLS concat -a $out_dir/combined.genotyped.sort.vcf.gz $snp_vcf -Oz -o $out_dir/all.vcf.gz
+$TABIX $out_dir/all.vcf.gz
+$EXTRACT_HAIR --bam $bam --vcf $out_dir/all.vcf.gz --out $out_dir/ext.lst --breakends 1 --mate_at_same 1 --support_read_tag READNAMES --contigs chr1,chr2,chr3,chr4,chr5,chr6,chr7,chr8,chr9,chr10,chr11,chr12,chr13,chr14,chr15,chr16,chr17,chr18,chr19,chr20,chr21,chr22,chrX,chrY
+sort -n -k3 $out_dir/ext.lst > $out_dir/ext.sorted.lst
+$SPECHAP -v $out_dir/all.vcf.gz -f $out_dir/ext.sorted.lst -o $out_dir/spec.vcf -p ngs
