@@ -4,7 +4,7 @@ CONFIGMANTA=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/bin/configManta.py
 SAMTOOLS=/home/grads/gzpan2/apps/samtools/bin/samtools
 BCFTOOLS=/home/grads/gzpan2/apps/bcftools/bin/bcftools
 LUMPY_EXPRESS=/home/grads/gzpan2/apps/lumpy-sv/bin/lumpyexpress
-SVTYPER=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/bin/svtyper
+SVTYPER=/home/grads/gzpan2/apps/miniconda3/envs/cityu2/bin/svtyper-sso
 SCRIPTS=/public/panguangze/giab/esv_pipe/scripts
 SURVIVOR=/home/grads/gzpan2/apps/SURVIVOR/Debug/SURVIVOR
 EXTRACT_HAIR=/home/grads/gzpan2/apps/extractHairs/build/ExtractHAIRs
@@ -60,7 +60,7 @@ $SAMTOOLS view -uF 0x0002 $bam | $SAMTOOLS view -uF 0x100 - | $SAMTOOLS view -uF
 $SAMTOOLS view -h $bam | $ESplitReads_BwaMem -i stdin | $SAMTOOLS view -Sb - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.sr.sort.bam
 $LUMPY_EXPRESS -B $bam -S $out_dir/lumpy/lumpy.sr.sort.bam -D $out_dir/lumpy/lumpy.discordant.sort.bam -o $out_dir/lumpy/lumpy.vcf
 $PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.evidence.vcf
-$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.evidence.vcf > $out_dir/lumpy/lumpy.svtyper.vcf
+$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.evidence.vcf --core $threads -o $out_dir/lumpy/lumpy.svtyper.vcf
 $PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/lumpy/lumpy.svtyper.vcf > $out_dir/lumpy/lumpy.adjusted2.vcf
 $PYTHON3 $SCRIPTS/parse2.py -v $out_dir/lumpy/lumpy.adjusted2.vcf --lumpy -o $out_dir/lumpy/lumpy.adjusted.vcf #fix _2 have no reads error
 # trans to BND format 
