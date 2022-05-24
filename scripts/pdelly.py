@@ -54,7 +54,7 @@ def main():
                 tmp[3] = refp
             elif tmp[4][1] == "[" and tmp[4][-1] == "[":
                 tmp[4] = "]"+tmp[0] +":"+tmp[1]+"]"+refp
-                tmp[4] = refp
+                tmp[3] = refp
 
             tmp[0] = tmp4[1]
             tmp[1] = tmp4[2]
