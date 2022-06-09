@@ -1,4 +1,5 @@
 #!/bin/bash
+#change tools to your path, notice that, you should install SURVIVOR from https://github.com/panguangze/SURVIVOR.git
 set -x
 SVABA=~/app/svaba/src/svaba/svaba
 CONFIGMANTA=~/miniconda3/envs/manta/bin/configManta.py
@@ -21,8 +22,8 @@ bam=$1
 ref=$2
 out_dir=$3
 threads=$4
-sample=$6
-snp_vcf=$5
+sampleName=$5
+# snp_vcf=$5
 bam_filename="$(basename -- $bam)"
 if [ ! -d $out_dir ]; then
   mkdir $out_dir
@@ -95,7 +96,7 @@ echo "$out_dir/delly/delly.adjusted2.vcf" >> $out_dir/sur.input
 #sur
 $SURVIVOR merge $out_dir/sur.input 200 2 1 0 0 10 $out_dir/survivor.output.vcf
 $BCFTOOLS sort $out_dir/survivor.output.vcf -o $out_dir/survivor.sort.vcf
-$PYTHON2 $SCRIPTS/combine_combined.py $out_dir/survivor.sort.vcf $sample $out_dir/sur.input $SCRIPTS/all.phred.txt > $out_dir/combined.genotyped.vcf
+$PYTHON2 $SCRIPTS/combine_combined.py $out_dir/survivor.sort.vcf $sampleName $out_dir/sur.input $SCRIPTS/all.phred.txt > $out_dir/combined.genotyped.vcf
 $BGZIP -f $out_dir/combined.genotyped.vcf
 $BCFTOOLS sort $out_dir/combined.genotyped.vcf.gz > $out_dir/combined.genotyped.sort.vcf
 #$BCFTOOLS sort $out_dir/combined.genotyped.vcf.gz -Oz > $out_dir/combined.genotyped.sort.vcf.gz
