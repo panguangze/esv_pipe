@@ -29,11 +29,13 @@ def main():
         if "SNP" in ID:
             out_put.write('\t'.join(record))
             continue
-        # 
+        #
         formats = re.split(';|=', record[7])
         # i = formats.index('SVLEN')
         # sv_len = abs(int(formats[i+1]))
         if "]" in record[4] or "[" in record[4]:
+            if record[0] not in record[4]:
+                continue
             out_put.write('\t'.join(record))
             continue
         print(record, "3333")
@@ -42,9 +44,9 @@ def main():
         i = formats.index('END')
         sv_end = abs(int(formats[i+1]))
         c_pos = int(record[1])
-        
+
         record[3] = str(fa[record[0]][c_pos-1:c_pos+2][0])
-        if "INV" in record[4]:
+        if "INV" in record[4] or 'INV' in record[2]:
             r1 = record[1]
             r2 = str(c_pos + 1)
             r3 = str(sv_end)
@@ -77,7 +79,7 @@ def main():
             record[3]= str(fa[record[0]][sv_end:sv_end+2][0])
             record[4] = alt4
             out_put.write('\t'.join(record))
-        if "DEL" in record[4]:
+        if "DEL" in record[4] or 'DEL' in record[2]:
             r1 = record[1]
             r2 = str(sv_end + 1)
             alt1 = record[3] + "[" + record[0] + ":" + r2+"["
@@ -92,7 +94,7 @@ def main():
             record[2] = ID + "_" + r1+":2"
             record[4] = alt2
             out_put.write('\t'.join(record))
-        if "DUP" in record[4]:
+        if "DUP" in record[4] or 'DUP' in record[2]:
             r1 = record[1]
             r2 = str(sv_end)
             alt1 = "]" + record[0] + ":" + r2+"]" + record[3]
@@ -107,7 +109,7 @@ def main():
             record[2] = ID + "_" + r1+":2"
             record[4] = alt2
             out_put.write('\t'.join(record))
-        if "INS" in record[4]:
+        if "INS" in record[4] or 'INS' in record[2]:
             r1 = record[1]
             r2 = str(c_pos + 1)
             alt1 = "]" + record[0] + ":" + r2+"]" + "N"
@@ -125,12 +127,12 @@ def main():
         # out_put.write('\t'.join(record))
         # record[2] = ID + ":2"
         # formats = re.split(';|=', record[7])
-        # # 
+        # #
         # try:
         #     i = formats.index('DEL')
         #     len = abs(int(formats[i+2]))
         #     record[1] = str(int(record[1]) + len + 1)
-        #     out_put.write('\t'.join(record))        
+        #     out_put.write('\t'.join(record))
         # except:
         #     pass
         # try:
@@ -144,4 +146,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

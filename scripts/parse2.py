@@ -39,7 +39,7 @@ def main():
                         support_reads[tmp[2][0:-2]] = re.split(r"[=;]",tmp[7])[3]
                     if len(tmp[2]) > 2 and tmp[2][-2:] == "_2":
                         vv = re.split(r"[;]",tmp[7])
-                        vv[1]=vv[1] + "=" + support_reads[tmp[2][0:-2]]
+                        vv[1]=vv[1] + "," + support_reads[tmp[2][0:-2]]
                         tmp[7]=";".join(vv)
                 out_vcf.write("\t".join(tmp))
                 #evids = []

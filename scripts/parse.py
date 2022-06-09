@@ -41,14 +41,14 @@ def main():
     elif args.manta:
         samfile = pysam.AlignmentFile(args.b, "rb")
         for read in samfile.fetch():
-            evidence_tag = read.get_tags()[-1][-1]
+            evidence_tag = read.get_tags()[-2][-1]
             bnd_id = evidence_tag.split("|")[0]
             if bnd_id in evidences.keys():
                 evidences[bnd_id].append(read.query_name)
             else:
                 evidences[bnd_id] = [read.query_name]
             # print(read.get_tags()[-1][-1])
-    # print(evidences)
+        print(evidences)
         tag = True
         for line in in_vcf.readlines():
             if line.startswith("#"):

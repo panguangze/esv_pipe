@@ -69,12 +69,17 @@ def main():
                 position = int(tab_split[1])
                 end = tab_split[7].replace("CIEND","XXXXX").split("END=")[-1].split(";")[0].split("\t")[0]
                 end_position = int(end)
+                if ']' in tab_split[4] or '[' in tab_split[4]:
+                    continue
+                else:
+                    svlen = end_position - position
+                    tab_split[7]=tab_split[7].replace("SVLEN=.","SVLEN="+str(svlen))
                 # possibly same as correct_max_position?
-                if end_position < position:
-                    new_end = str(position)
-                    new_start = end
-                    tab_split[1] = new_start
-                    tab_split[7].replace("END=%s" % end, "END=%s" % new_end)
+                #if end_position < position:
+                #    new_end = str(position)
+                #    new_start = end
+                #    tab_split[1] = new_start
+                #    tab_split[7].replace("END=%s" % end, "END=%s" % new_end)
 
                 # adds "chr"
                 if "chr" not in tab_split[0]:
