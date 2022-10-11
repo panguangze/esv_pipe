@@ -1,21 +1,22 @@
-#!/bin/bash
-#change tools to your path
-csv=$1
-fsv=$2
-msv=$3
+child_sv=$1
+p1_sv=$2
+p2_sv=$3
 snp=$4
 out_dir=$5
-if [ -f "$out_dir/sur.input" ]; then
-	rm $out_dir/sur.input
-fi
-touch $out_dir/sur.input
-echo $csv >> $out_dir/sur.input
-echo $fsv >> $out_dir/sur.input
-echo $msv >> $out_dir/sur.input
 
-~/SURVIVOR/Debug/SURVIVOR merge $out_dir/sur.input 200 1 1 0 0 10 $out_dir/trio.merged.sv.vcf
-bcftools sort $out_dir/trio.merged.sv.vcf -o $out_dir/trio.merged.sv.sorted.vcf
-bgzip $out_dir/trio.merged.sv.sorted.vcf
-tabix $out_dir/trio.merged.sv.sorted.vcf.gz
-~/app/bcftools/bin/bcftools concat -a $snp $out_dir/trio.merged.sv.sorted.vcf.gz -Oz -o $out_dir/all.sv.snp.vcf.gz
-tabix $out_dir/all.sv.snp.vcf.gz
+mkdir -p $out_dir
+if [ -f "$out_dir/trio.sr10.input" ]; then
+        rm $out_dir/trio.sr10.input
+fi
+touch $out_dir/trio.sr10.input
+echo $child_sv >> $out_dir/trio.sr10.input
+echo $p1_sv >> $out_dir/trio.sr10.input
+echo $p2_sv >> $out_dir/trio.sr10.input
+
+$SURVIVOR merge $out_dir/trio.sr10.input 100 1 1 1 1 10 $out_dir/trio.sr10.sv.vcf
+$BCFTOOLS sort $out_dir/trio.sr10.sv.vcf -Oz -o $out_dir/trio.sr10.sv.sort.vcf.gz
+$TABIX $out_dir/trio.sr10.sv.sort.vcf.gz
+$BCFTOOLS merge -Oz -0 -o $trio_name.sorted.snp.vcf.gz $csnp $fsnp $msnp
+$TABIX $trio_name.merged.snp.vcf.gz
+$BCFTOOLS concat -Oz -o $snp $out_dir/trio.sr10.sv.sort.vcf.gz $out_dir/trio.sr10.all.vcf.gz
+$out_dir/trio.sr10.all.vcf.gz
