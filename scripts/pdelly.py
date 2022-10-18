@@ -30,10 +30,12 @@ def main():
             continue
         else:
             tmp = line.split("\t")
+            tmp[8] = tmp[8]+":READNAMES"
             lls = tmp[7].split(";")
+            if "READNAMES" in tmp[7]:
+                del lls[3]
             if tmp[2] in reads.keys():
-                lls[3] = "READNAMES="+",".join(reads[tmp[2]])
-                tmp[7] = ";".join(lls)
+                tmp[9] = tmp[9] +":"+",".join(lls)
             if "BND" not in tmp[2]:
                 out_vcf.write("\t".join(tmp))
                 continue

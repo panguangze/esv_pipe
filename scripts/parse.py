@@ -23,17 +23,18 @@ def main():
                 out_vcf.write(line)
                 if tag and line.startswith("##INFO"):
                     tag = False
-                    out_vcf.write('##INFO=<ID=READNAMES,Number=1,Type=String,Description="Support reads name">\n')
+                    out_vcf.write('##FORMAT=<ID=READNAMES,Number=1,Type=String,Description="Support reads name">\n')
                 continue
             elif "Evidence" in line:
                 tmp = line.split("\t")
-                evids.append(tmp[2])
+                evids.append(tmp[2].replace("_1","").replace("_2",""))
             else:
+                tmp[8]=tmp[8]+":READNAMES"
                 tmp = line.split("\t")
                 if len(tmp[2]) > 2 and tmp[2][-2] == "_" and tmp[2][0:-2] in support_reads.keys():
-                    tmp[7] = tmp[7]+";READNAMES="+",".join(support_reads[tmp[2][0:-2]])
+                    tmp[9] = tmp[9]+":"+",".join(support_reads[tmp[2][0:-2]])
                 else:
-                    tmp[7] = tmp[7]+";READNAMES="+",".join(evids)
+                    tmp[9] = tmp[9]+":"+",".join(evids)
                     if len(tmp[2]) > 2 and tmp[2][-2] == "_":
                         support_reads[tmp[2][0:-2]] = evids
                 out_vcf.write("\t".join(tmp))
