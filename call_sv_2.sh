@@ -78,7 +78,9 @@ if [ ! -f $out_dir/lumpy/lumpy.vcf ]; then
 	if [ ! -f $out_dir/lumpy/lumpy.discordant.sort.bam ]; then
 		$SAMTOOLS view -uF 0x0002 $bam | $SAMTOOLS view -uF 0x100 - | $SAMTOOLS view -uF 0x0004 - | $SAMTOOLS view -uF 0x0008 - | $SAMTOOLS view -bF 0x0400 - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.discordant.sort.bam
 	fi
-	$SAMTOOLS view -h $bam | $PYTHON2 $ESplitReads_BwaMem -i stdin | $SAMTOOLS view -Sb - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.sr.sort.bam
+	if [ ! -f $out_dir/lumpy/lumpy.sr.sort.bam ]; then
+		$SAMTOOLS view -h $bam | $PYTHON2 $ESplitReads_BwaMem -i stdin | $SAMTOOLS view -Sb - | $SAMTOOLS sort - -o $out_dir/lumpy/lumpy.sr.sort.bam
+	fi
 	$LUMPY_EXPRESS -B $bam -S $out_dir/lumpy/lumpy.sr.sort.bam -D $out_dir/lumpy/lumpy.discordant.sort.bam -o $out_dir/lumpy/lumpy.vcf
 else
 	rm $out_dir/lumpy/lumpy.discordant.sort.bam

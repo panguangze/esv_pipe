@@ -16,8 +16,8 @@ def main():
         for line in survivor_input_list:
             if "svaba" in line:
                 headers.append("svaba")
-            elif "breakdancer" in line:
-                headers.append("BREAKDANCER")
+            elif "dysgu" in line:
+                headers.append("DYSGU")
             elif "breakseq" in line:
                 headers.append("BREAKSEQ")
             elif "manta" in line:
@@ -28,7 +28,7 @@ def main():
                 headers.append("DELLY")
             else:
                 headers.append(line.strip())
-            
+
     quality_mappings = { "lt300": {}, "300to1000": {}, "1kbplus": {}, "all": {}, "ins": {} }
 
     # parse all phred file
@@ -39,7 +39,7 @@ def main():
             entry_split = size_split[1].strip().split("=")
             caller_technologies = entry_split[0].split("&")
             caller_technologies.sort()
-            if int(entry_split[1]) == 0: 
+            if int(entry_split[1]) == 0:
                 quality_mappings[size_class][",".join(caller_technologies)] = 0
             else:
                 quality_mappings[size_class]["-".join(caller_technologies)] = int(entry_split[1])
@@ -50,6 +50,7 @@ def main():
             if line.startswith("##"):
                 if "FORMAT" in line and not written_additional_header:
                     print "##INFO=<ID=SUPP,Number=.,Type=String,Description=\"Number of callers that support an ALT call. This count is based on the presence of a call, whether it could be confirmed by SVTyper. Due to differences in the breakpoints, this number may differ from the sum of all callers in the CALLERS field\">"
+                    print "##INFO=<ID=SR,Number=1,Type=Integer,Description=\"Avg number of reads that support an ALT call.\">"
                     print "##INFO=<ID=CALLERS,Number=.,Type=String,Description=\"Callers that support an ALT call at this position. To be included, the caller must have been confirmed by separate genotyping with SVTyper\">"
                     print "##FILTER=<ID=LowQual,Description=\"Variant calls with this profile of supporting calls typically have a low overall precision\">"
                     print "##FILTER=<ID=Unknown,Description=\"Insufficient quality evidence exists for calls of this type and support\">"
@@ -88,8 +89,13 @@ def main():
                 het = 0
                 hom = 0
                 ref = 0
+                all_reads = set()
+                sum_sr=0
                 # counts support for het/hom/ref
                 for i in range(len(tab_split[9:])):
+                    for r in tab_split[9+i].split(":")[-1].split(","):
+                        all_reads.add(r)
+                    sum_sr = sum_sr + int(tab_split[9+i].split(":")[3].split(",")[1])
                     if "0/1" in tab_split[9+i] or "1/1" in tab_split[9+i] or "./1" in tab_split[9+i]:
                         if "0/1" in tab_split[9+i] or "./1" in tab_split[9+i]:
                             het += 1
@@ -156,6 +162,9 @@ def main():
                     tab_split[6] = "Unknown"
 
                 # prints final line
+                tab_split[8] = tab_split[8]+":READNAMES"
+                tab_split[7] = tab_split[7]+";SR="+str(int(sum_sr/(len(support.lstrip(",").split(",")))))
+                tab_split[9] = tab_split[9]+":"+",".join(all_reads)
                 print "\t".join(tab_split[:10])
 
 main()
