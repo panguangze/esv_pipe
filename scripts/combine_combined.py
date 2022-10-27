@@ -96,7 +96,7 @@ def main():
                     for r in tab_split[9+i].split(":")[-1].split(","):
                         all_reads.add(r)
                     sum_sr = sum_sr + int(tab_split[9+i].split(":")[3].split(",")[1])
-                    if "0/1" in tab_split[9+i] or "1/1" in tab_split[9+i] or "./1" in tab_split[9+i]:
+                    if "0/1" in tab_split[9+i] or "1/1" in tab_split[9+i] or "./1" in tab_split[9+i] or "./." in tab_split[9+i]:
                         if "0/1" in tab_split[9+i] or "./1" in tab_split[9+i]:
                             het += 1
                         if "1/1" in tab_split[9+i] or "./1" in tab_split[9+i]:
@@ -165,6 +165,9 @@ def main():
                 tab_split[8] = tab_split[8]+":READNAMES"
                 tab_split[7] = tab_split[7]+";SR="+str(int(sum_sr/(len(support.lstrip(",").split(",")))))
                 tab_split[9] = tab_split[9]+":"+",".join(all_reads)
-                print "\t".join(tab_split[:10])
+                if tab_split[6] == "Reference" or tab_split[6] == "Unconfirmed":
+                    continue
+                else:
+                    print "\t".join(tab_split[:10])
 
 main()
