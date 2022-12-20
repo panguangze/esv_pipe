@@ -17,27 +17,38 @@ def main():
     reads = {}
     tag = True
     ev_tag = True
+    prev_k = ""
     for line in open(args.d).readlines():
         if line.startswith("#"):
             continue
         ts = line.split("\t")
-        if ts[0] not in reads.keys():
+        if ts[0] != prev_k:
+        # if ts[0] not in reads.keys():
             reads[ts[0]] = []
         reads[ts[0]].append(ts[2])
+        prev_k = ts[0]
+        print(line)
     for line in in_vcf.readlines():
         if line.startswith("#"):
             out_vcf.write(line)
             continue
         else:
-            tmp = line.split("\t")
+            tmp = line.strip().split("\t")
             tmp[8] = tmp[8]+":READNAMES"
             lls = tmp[7].split(";")
             if "READNAMES" in tmp[7]:
                 del lls[3]
-            if tmp[2] in reads.keys():
-                tmp[9] = tmp[9] +":"+",".join(lls)
+            # if tmp[2] in reads.keys():
+            try:
+                if "READNAMES" not in lls:
+                    tmp[9] = tmp[9].strip() +":"+",".join(reads[tmp[2]]).replace(":","_COLON_")
+            except:
+                continue
+                    # tmp[9] = tmp[9] +":"+",".join(lls)
+                # else:
+                    # tmp[9] = tmp[9] +":"+",".join(reads[tmp[2]])
             if "BND" not in tmp[2]:
-                out_vcf.write("\t".join(tmp))
+                out_vcf.write("\t".join(tmp) + "\n")
                 continue
             tmp4 = re.split(r"[\]\[\:]",tmp[4])
             tmp[2]=tmp[2]+":1"

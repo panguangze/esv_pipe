@@ -57,8 +57,8 @@ def classify(line, ALT_INDEX, mdict):
             return "DEL"
 
         # INS
-        INS_PATTERN_THIS = re.compile(r'\D\].+\]')
-        INS_PATTERN_MATE = re.compile(r'\[.+\[\D')
+        INS_PATTERN_THIS = re.compile(r'\].+\]\D')
+        INS_PATTERN_MATE = re.compile(r'\D\[.+\[')
         if INS_PATTERN_THIS.match(alt) and INS_PATTERN_MATE.match(mateAlt):
             return "DUP/INS"
 

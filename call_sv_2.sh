@@ -6,7 +6,7 @@ CONFIGMANTA=/home/panguangze/miniconda3/envs/apps/bin/configManta.py
 SAMTOOLS=~/apps/usr/local/bin/samtools
 BCFTOOLS=~/apps/usr/local/bin/bcftools
 LUMPY_EXPRESS=/home/panguangze/miniconda3/envs/apps/bin/lumpyexpress
-SVTYPER=/home/panguangze/miniconda3/envs/apps/bin/svtyper-sso
+SVTYPER=/home/panguangze/miniconda3/envs/apps/bin/svtyper
 SCRIPTS=/home/panguangze/tmp_file/esv_pipe/scripts
 SURVIVOR=~/tmp_file/SURVIVOR/Debug/SURVIVOR
 EXTRACT_HAIR=ExtractHAIRs
@@ -47,18 +47,19 @@ fi
 #   $SAMTOOLS index $bam -@ $threads
 # fi
 # # svaba
-if [ ! -f $out_dir/svaba/svaba.svaba.sv.vcf ]; then
-	$SVABA run -t $bam -G $ref -a $out_dir/svaba/svaba --read-tracking --germline -p $threads
-	$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/svaba/svaba.svaba.sv.vcf > $out_dir/svaba/svaba.svtyper.sv.vcf
-	$PYTHON2 $SCRIPTS/svaba_ano.py $out_dir/svaba/svaba.svtyper.sv.vcf > $out_dir/svaba/svaba.adjusted.vcf
-fi
+#if [ ! -f $out_dir/svaba/svaba.svaba.sv.vcf ]; then
+#	$SVABA run -t $bam -G $ref -a $out_dir/svaba/svaba --read-tracking --germline -p $threads
+#	$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/svaba/svaba.svaba.sv.vcf > $out_dir/svaba/svaba.svtyper.sv.vcf
+#	$PYTHON2 $SCRIPTS/svaba_ano.py $out_dir/svaba/svaba.svtyper.sv.vcf > $out_dir/svaba/svaba.adjusted.vcf
+#fi
 #clean
-rm $out_dir/svaba/svaba.bps.txt.gz
-rm $out_dir/svaba/svaba.contigs.bam
-rm $out_dir/svaba/svaba.alignments.txt.gz
-rm $out_dir/svaba/svaba.svaba.unfiltered.indel.vcf
-bgzip $out_dir/svaba/svaba.svaba.indel.vcf
-rm $out_dir/svaba/svaba.log
+#rm $out_dir/svaba/svaba.bps.txt.gz
+#rm $out_dir/svaba/svaba.contigs.bam
+#rm $out_dir/svaba/svaba.alignments.txt.gz
+#rm $out_dir/svaba/svaba.svaba.unfiltered.indel.vcf
+#rm $out_dir/svaba.discordant.txt.gz
+#bgzip $out_dir/svaba/svaba.svaba.indel.vcf
+#rm $out_dir/svaba/svaba.log
 # manta
 if [ ! -f $out_dir/manta/manta.svtyper.vcf ]; then
 	$CONFIGMANTA --bam $bam --referenceFasta $ref --runDir $out_dir/manta --generateEvidenceBam
@@ -86,9 +87,9 @@ else
 	rm $out_dir/lumpy/lumpy.discordant.sort.bam
 	rm $out_dir/lumpy/lumpy.sr.sort.bam
 fi
-$PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.evidence.vcf
-$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.evidence.vcf --core $threads -o $out_dir/lumpy/lumpy.svtyper.vcf
-$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/lumpy/lumpy.svtyper.vcf > $out_dir/lumpy/lumpy.adj.vcf
+$PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.noevidence.vcf
+$BCFTOOLS filter -i "FORMAT/SU < 5" $out_dir/lumpy/lumpy.noevidence.vcf -o $out_dir/lumpy/lumpy.su.vcf
+#$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.su.vcf -o $out_dir/lumpy/lumpy.adjusted.vcf
 #$PYTHON3 $SCRIPTS/parse2.py -v $out_dir/lumpy/lumpy.adj.vcf --lumpy -o $out_dir/lumpy/lumpy.adjusted.vcf #fix _2 have no reads error
 # $PYTHON3 $SCRIPTS/rm_cross.py -v $out_dir/lumpy/lumpy.adjusted.vcf -o $out_dir/lumpy/lumpy.adjusted2.vcf -f $ref
 # trans to BND format 
@@ -102,35 +103,36 @@ if [ ! -f $out_dir/delly/delly.vcf ]; then
 	cp $out_dir/delly/delly.vcf  $out_dir/delly/delly.svtyper.vcf
 	gunzip $out_dir/delly/delly.dump.gz
 fi
-$BCFTOOLS view -f 'PASS' $out_dir/delly/delly.svtyper.vcf -o $out_dir/delly/delly.pass.vcf
-$PYTHON3 $SCRIPTS/pdelly.py -v $out_dir/delly/delly.pass.vcf -r $ref -o $out_dir/delly/delly.evidence.vcf -d $out_dir/delly/delly.dump
-$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/delly/delly.evidence.vcf > $out_dir/delly/delly.adjusted.vcf
+echo "done"
+#$BCFTOOLS view -f 'PASS' $out_dir/delly/delly.svtyper.vcf -o $out_dir/delly/delly.pass.vcf
+#$PYTHON3 $SCRIPTS/pdelly.py -v $out_dir/delly/delly.pass.vcf -r $ref -o $out_dir/delly/delly.evidence.vcf -d $out_dir/delly/delly.dump
+#$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/delly/delly.evidence.vcf > $out_dir/delly/delly.adjusted.vcf
 # $PYTHON3 $SCRIPTS/rm_cross.py -v $out_dir/delly/delly.adjusted.vcf -o $out_dir/delly/delly.adjusted2.vcf -f $ref
 # trans to BND format
 #$PYTHON3 $SCRIPTS/trans_to_BND_format.py -v $out_dir/delly/delly.adjusted.vcf -f $ref -o $out_dir/delly/delly.adjusted.BND.vcf
 # generate input for survivor
 
-$BCFTOOLS view -f PASS -i "FORMAT/RV>=10" $out_dir/delly/delly.adjusted.vcf $out_dir/delly/delly.sr10.vcf
-$BCFTOOLS view -i "FORMAT/SR + FORMAT/PE >= 10" $out_dir/lumpy/lumpy.adjusted.vcf -o $out_dir/lumpy/lumpy.sr10.vcf
-$BCFTOOLS view -i "FORMAT/FT='PASS' && FORMAT/SR[0:1]>=10" $out_dir/manta/manta.adjusted.vcf -o $out_dir/manta/manta.sr10.vcf
-$BCFTOOLS view -i "FORMAT/SR>=10" $out_dir/svaba/svaba.adjusted.vcf -o $out_dir/svaba/svaba.sr10.vcf
+#$BCFTOOLS view -f PASS -i "FORMAT/RV>=10" $out_dir/delly/delly.adjusted.vcf $out_dir/delly/delly.sr10.vcf
+#$BCFTOOLS view -i "FORMAT/SR + FORMAT/PE >= 10" $out_dir/lumpy/lumpy.adjusted.vcf -o $out_dir/lumpy/lumpy.sr10.vcf
+#$BCFTOOLS view -i "FORMAT/FT='PASS' && FORMAT/SR[0:1]>=10" $out_dir/manta/manta.adjusted.vcf -o $out_dir/manta/manta.sr10.vcf
+#$BCFTOOLS view -i "FORMAT/SR>=10" $out_dir/svaba/svaba.adjusted.vcf -o $out_dir/svaba/svaba.sr10.vcf
 
 
-if [ -f "$out_dir/sur.input" ]; then
-	rm $out_dir/sur.input
-fi
-touch $out_dir/sur.input
-echo "$out_dir/delly/delly.sr10.vcf" >> $out_dir/sur.input
-echo "$out_dir/lumpy/lumpy.sr10.vcf" >> $out_dir/sur.input
-echo "$out_dir/manta/manta.sr10.vcf" >> $out_dir/sur.input
-echo "$out_dir/svaba/svaba.sr10.vcf" >> $out_dir/sur.input
+#if [ -f "$out_dir/sur.input" ]; then
+#	rm $out_dir/sur.input
+#fi
+#touch $out_dir/sur.input
+#echo "$out_dir/delly/delly.sr10.vcf" >> $out_dir/sur.input
+#echo "$out_dir/lumpy/lumpy.sr10.vcf" >> $out_dir/sur.input
+#echo "$out_dir/manta/manta.sr10.vcf" >> $out_dir/sur.input
+#echo "$out_dir/svaba/svaba.sr10.vcf" >> $out_dir/sur.input
 
 #sur
-$SURVIVOR merge $out_dir/sur.input 100 2 1 1 1 10 $out_dir/survivor.sr10.vcf
-$BCFTOOLS sort $out_dir/survivor.sr10.vcf -o $out_dir/survivor.sr10.sort.vcf
-$PYTHON2 $SCRIPTS/combine_combined.py $out_dir/survivor.sr10.sort.vcf $sampleName $out_dir/sur.input $SCRIPTS/all.phred.txt > $out_dir/combined.sr10.vcf
-$BGZIP -f $out_dir/combined.sr10.vcf
-$BCFTOOLS sort $out_dir/combined.sr10.vcf.gz > $out_dir/combined.sr10.sort.vcf
+#$SURVIVOR merge $out_dir/sur.input 100 2 1 1 1 10 $out_dir/survivor.sr10.vcf
+#$BCFTOOLS sort $out_dir/survivor.sr10.vcf -o $out_dir/survivor.sr10.sort.vcf
+#$PYTHON2 $SCRIPTS/combine_combined.py $out_dir/survivor.sr10.sort.vcf $sampleName $out_dir/sur.input $SCRIPTS/all.phred.txt > $out_dir/combined.sr10.vcf
+#$BGZIP -f $out_dir/combined.sr10.vcf
+#$BCFTOOLS sort $out_dir/combined.sr10.vcf.gz > $out_dir/combined.sr10.sort.vcf
 #$BCFTOOLS sort $out_dir/combined.genotyped.vcf.gz -Oz > $out_dir/combined.genotyped.sort.vcf.gz
 #$TABIX -f $out_dir/combined.genotyped.sort.vcf.gz
 #$BCFTOOLS concat -a $out_dir/combined.genotyped.sort.vcf.gz $snp_vcf -Oz -o $out_dir/all.vcf.gz

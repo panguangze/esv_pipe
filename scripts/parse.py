@@ -29,16 +29,18 @@ def main():
                 tmp = line.split("\t")
                 evids.append(tmp[2].replace("_1","").replace("_2",""))
             else:
-                tmp[8]=tmp[8]+":READNAMES"
-                tmp = line.split("\t")
-                if len(tmp[2]) > 2 and tmp[2][-2] == "_" and tmp[2][0:-2] in support_reads.keys():
-                    tmp[9] = tmp[9]+":"+",".join(support_reads[tmp[2][0:-2]])
-                else:
-                    tmp[9] = tmp[9]+":"+",".join(evids)
-                    if len(tmp[2]) > 2 and tmp[2][-2] == "_":
-                        support_reads[tmp[2][0:-2]] = evids
-                out_vcf.write("\t".join(tmp))
-                evids = []
+                out_vcf.write(line)
+
+                # tmp = line.split("\t")
+                # tmp[8]=tmp[8]+":READNAMES"
+                # if len(tmp[2]) > 2 and tmp[2][-2] == "_" and tmp[2][0:-2] in support_reads.keys():
+                #     tmp[9] = tmp[9]+":"+",".join(support_reads[tmp[2][0:-2]])
+                # else:
+                #     tmp[9] = tmp[9]+":"+",".join(evids)
+                #     if len(tmp[2]) > 2 and tmp[2][-2] == "_":
+                #         support_reads[tmp[2][0:-2]] = evids
+                # out_vcf.write("\t".join(tmp))
+                # evids = []
     elif args.manta:
         samfile = pysam.AlignmentFile(args.b, "rb")
         for read in samfile.fetch():

@@ -95,7 +95,8 @@ def main():
                 for i in range(len(tab_split[9:])):
                     for r in tab_split[9+i].split(":")[-1].split(","):
                         all_reads.add(r)
-                    sum_sr = sum_sr + int(tab_split[9+i].split(":")[3].split(",")[1])
+                    if i != 0:
+                        sum_sr = sum_sr + int(tab_split[9+i].split(":")[3].split(",")[1])
                     if "0/1" in tab_split[9+i] or "1/1" in tab_split[9+i] or "./1" in tab_split[9+i] or "./." in tab_split[9+i]:
                         if "0/1" in tab_split[9+i] or "./1" in tab_split[9+i]:
                             het += 1
@@ -107,10 +108,10 @@ def main():
                         if headers[i] not in support:
                             support += ",%s" % headers[i]
                 # if caller(s) supports variant, adds this to string at end
-                if len(support) > 0:
-                    tab_split[7] += ";CALLERS=%s" % support.lstrip(",")
-                else:
-                    support = "."
+                # if len(support) > 0:
+                #     tab_split[7] += ";CALLERS=%s" % support.lstrip(",")
+                # else:
+                #     support = "."
                 # parses hom/het/ref into short genotype strings
                 tab_split[8] = "GT"
                 if het == 0 and hom == 0:
@@ -163,11 +164,15 @@ def main():
 
                 # prints final line
                 tab_split[8] = tab_split[8]+":READNAMES"
-                tab_split[7] = tab_split[7]+";SR="+str(int(sum_sr/(len(support.lstrip(",").split(",")))))
+                # print(sum_sr,support)
+                # tab_split[7] = tab_split[7]+";SR="+str(int(sum_sr/(len(support.lstrip(",").split(",")) - 1)))
+                tab_split[7] = tab_split[7]+";SR="+str(int(sum_sr/(int(tab_split[7][5]) - 1)))
                 tab_split[9] = tab_split[9]+":"+",".join(all_reads)
-                if tab_split[6] == "Reference" or tab_split[6] == "Unconfirmed":
+                # print tab_split[1],tab_split[9]
+                if tab_split[9] == "0/0" or tab_split[9] == "0/0":
                     continue
                 else:
+                    # pass
                     print "\t".join(tab_split[:10])
 
 main()
