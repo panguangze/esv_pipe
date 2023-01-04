@@ -27,20 +27,24 @@ def main():
                 continue
             elif "Evidence" in line:
                 tmp = line.split("\t")
-                evids.append(tmp[2].replace("_1","").replace("_2",""))
+                # span reads
+                if tmp[12] == "id:1":
+                    evids.append("SPAN_"+tmp[2]+"_"+tmp[3]+"_"+tmp[5]+"_"+tmp[6])
+                else:
+                    evids.append(tmp[2].replace("_1","").replace("_2","").replace(":","_COLON_"))
             else:
-                out_vcf.write(line)
+                # out_vcf.write(line)
 
-                # tmp = line.split("\t")
-                # tmp[8]=tmp[8]+":READNAMES"
-                # if len(tmp[2]) > 2 and tmp[2][-2] == "_" and tmp[2][0:-2] in support_reads.keys():
-                #     tmp[9] = tmp[9]+":"+",".join(support_reads[tmp[2][0:-2]])
-                # else:
-                #     tmp[9] = tmp[9]+":"+",".join(evids)
-                #     if len(tmp[2]) > 2 and tmp[2][-2] == "_":
-                #         support_reads[tmp[2][0:-2]] = evids
-                # out_vcf.write("\t".join(tmp))
-                # evids = []
+                tmp = line.strip().split("\t")
+                tmp[8]=tmp[8]+":READNAMES"
+                if len(tmp[2]) > 2 and tmp[2][-2] == "_" and tmp[2][0:-2] in support_reads.keys():
+                    tmp[9] = tmp[9]+":"+",".join(support_reads[tmp[2][0:-2]])
+                else:
+                    tmp[9] = tmp[9]+":"+",".join(evids)
+                    if len(tmp[2]) > 2 and tmp[2][-2] == "_":
+                        support_reads[tmp[2][0:-2]] = evids
+                out_vcf.write("\t".join(tmp)+"\n")
+                evids = []
     elif args.manta:
         samfile = pysam.AlignmentFile(args.b, "rb")
         for read in samfile.fetch():

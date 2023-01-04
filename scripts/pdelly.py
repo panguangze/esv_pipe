@@ -27,7 +27,6 @@ def main():
             reads[ts[0]] = []
         reads[ts[0]].append(ts[2])
         prev_k = ts[0]
-        print(line)
     for line in in_vcf.readlines():
         if line.startswith("#"):
             out_vcf.write(line)
@@ -52,7 +51,7 @@ def main():
                 continue
             tmp4 = re.split(r"[\]\[\:]",tmp[4])
             tmp[2]=tmp[2]+":1"
-            out_vcf.write("\t".join(tmp))
+            out_vcf.write("\t".join(tmp)+ "\n")
             tmp[2]=tmp[2][0:-1] + "2"
             p = int(tmp4[2])
             refp = str(ref[tmp4[1]][p:p+1])
@@ -71,6 +70,6 @@ def main():
 
             tmp[0] = tmp4[1]
             tmp[1] = tmp4[2]
-            out_vcf.write("\t".join(tmp))
+            out_vcf.write("\t".join(tmp)+ "\n")
 if __name__ == '__main__':
     main()
