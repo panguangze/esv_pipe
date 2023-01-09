@@ -18,6 +18,7 @@ def main():
     tag = True
     ev_tag = True
     prev_k = ""
+    has_add_readtag=False
     for line in open(args.d).readlines():
         if line.startswith("#"):
             continue
@@ -30,6 +31,9 @@ def main():
     for line in in_vcf.readlines():
         if line.startswith("#"):
             out_vcf.write(line)
+            if "##FORMAT" in line and not has_add_readtag:
+                has_add_readtag = True
+                out_vcf.write('##FORMAT=<ID=READNAMES,Number=1,Type=String,Description="Support reads name">\n') 
             continue
         else:
             tmp = line.strip().split("\t")

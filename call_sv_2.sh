@@ -1,12 +1,13 @@
 #!/bin/bash
 #change tools to your path, notice that, you should install SURVIVOR from https://github.com/panguangze/SURVIVOR.git
 #set -x
+DYSGU=/home/panguangze/.local/bin/dysgu
 SVABA=/home/panguangze/miniconda3/envs/apps/bin/svaba
 CONFIGMANTA=/home/panguangze/miniconda3/envs/apps/bin/configManta.py
 SAMTOOLS=~/apps/usr/local/bin/samtools
 BCFTOOLS=~/apps/usr/local/bin/bcftools
 LUMPY_EXPRESS=/home/panguangze/miniconda3/envs/apps/bin/lumpyexpress
-SVTYPER=/home/panguangze/miniconda3/envs/apps/bin/svtyper
+SVTYPER=/home/panguangze/miniconda3/envs/apps/bin/svtyper-sso
 SCRIPTS=/home/panguangze/tmp_file/esv_pipe/scripts
 SURVIVOR=~/tmp_file/SURVIVOR/Debug/SURVIVOR
 EXTRACT_HAIR=ExtractHAIRs
@@ -43,6 +44,12 @@ fi
 if [ ! -d $out_dir/delly ]; then
   mkdir $out_dir/delly
 fi
+if [ ! -d $out_dir/dysgu ]; then
+  mkdir $out_dir/dysgu
+fi
+if [ ! -f $bam.crai ]; then
+  $SAMTOOLS index -@ $threads $bam
+fi
 # if [ ! -f "$bam.bai" ]; then
 #   $SAMTOOLS index $bam -@ $threads
 # fi
@@ -62,8 +69,9 @@ fi
 #rm $out_dir/svaba/svaba.log
 # manta
 if [ ! -f $out_dir/manta/manta.svtyper.vcf ]; then
+	rm $out_dir/manta/* -rf
 	$CONFIGMANTA --bam $bam --referenceFasta $ref --runDir $out_dir/manta --generateEvidenceBam
-	$out_dir/manta/runWorkflow.py -m local -j $threads -g 150
+	$out_dir/manta/runWorkflow.py -m local -j $threads -g 52
 	gunzip $out_dir/manta/results/variants/diploidSV.vcf.gz
 	cp $out_dir/manta/results/variants/diploidSV.vcf  $out_dir/manta/manta.svtyper.vcf
 	#time $PYTHON3 $SCRIPTS/parse.py --manta -v $out_dir/manta/manta.svtyper.vcf -b $out_dir/manta/results/evidence/evidence_0.$bam_filename -o $out_dir/manta/manta.evidence.vcf
@@ -72,7 +80,7 @@ $PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/manta/manta.svtyper.vcf >
 
 #clean
 rm $out_dir/manta/workspace -rf
-
+echo "manta"
 # $PYTHON3 $SCRIPTS/rm_cross.py -v $out_dir/manta/manta.adjusted.vcf -o $out_dir/manta/manta.adjusted2.vcf -f $ref
 # lumpy
 if [ ! -f $out_dir/lumpy/lumpy.vcf ]; then
@@ -87,8 +95,9 @@ else
 	rm $out_dir/lumpy/lumpy.discordant.sort.bam
 	rm $out_dir/lumpy/lumpy.sr.sort.bam
 fi
-$PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.noevidence.vcf
-$BCFTOOLS filter -i "FORMAT/SU < 5" $out_dir/lumpy/lumpy.noevidence.vcf -o $out_dir/lumpy/lumpy.su.vcf
+#$PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.noevidence.vcf
+#$BCFTOOLS filter -i "FORMAT/SU < 5" $out_dir/lumpy/lumpy.noevidence.vcf -o $out_dir/lumpy/lumpy.su.vcf
+echo "lumpy"
 #$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.su.vcf -o $out_dir/lumpy/lumpy.adjusted.vcf
 #$PYTHON3 $SCRIPTS/parse2.py -v $out_dir/lumpy/lumpy.adj.vcf --lumpy -o $out_dir/lumpy/lumpy.adjusted.vcf #fix _2 have no reads error
 # $PYTHON3 $SCRIPTS/rm_cross.py -v $out_dir/lumpy/lumpy.adjusted.vcf -o $out_dir/lumpy/lumpy.adjusted2.vcf -f $ref
@@ -103,8 +112,20 @@ if [ ! -f $out_dir/delly/delly.vcf ]; then
 	cp $out_dir/delly/delly.vcf  $out_dir/delly/delly.svtyper.vcf
 	gunzip $out_dir/delly/delly.dump.gz
 fi
-echo "done"
-#$BCFTOOLS view -f 'PASS' $out_dir/delly/delly.svtyper.vcf -o $out_dir/delly/delly.pass.vcf
+echo "delly"
+#dysgu
+if [ ! -f $out_dir/dysgu/dysgu.vcf ]; then
+        $DYSGU run -p $threads -c --min-support 10 -v 2 $ref $out_dir/dysgu/tmp $bam -o $out_dir/dysgu/dysgu.vcf
+fi
+rm $out_dir/dysgu/tmp
+echo "dysgu"
+
+$BCFTOOLS view -f 'PASS' $out_dir/delly/delly.svtyper.vcf -o $out_dir/delly/delly.pass.vcf
+$PYTHON3 $SCRIPTS/pdelly.py -v $out_dir/delly/delly.pass.vcf -r ~/ref/Homo_sapiens_assembly38.fasta -o $out_dir/delly/delly.adjusted.vcf -d $out_dir/delly/delly.dump
+$PYTHON3 $SCRIPTS/parse.py --lumpy -v $out_dir/lumpy/lumpy.vcf -o $out_dir/lumpy/lumpy.noevidence.vcf
+$BCFTOOLS filter -e "FORMAT/SU < 5" $out_dir/lumpy/lumpy.noevidence.vcf -o $out_dir/lumpy/lumpy.su.vcf
+$SVTYPER -B $bam -i $out_dir/lumpy/lumpy.su.vcf -o $out_dir/lumpy/lumpy.adjusted.vcf --core $threads --batch_size 2000
+
 #$PYTHON3 $SCRIPTS/pdelly.py -v $out_dir/delly/delly.pass.vcf -r $ref -o $out_dir/delly/delly.evidence.vcf -d $out_dir/delly/delly.dump
 #$PYTHON3 $SCRIPTS/adjust_svtyper_genotypes.py $out_dir/delly/delly.evidence.vcf > $out_dir/delly/delly.adjusted.vcf
 # $PYTHON3 $SCRIPTS/rm_cross.py -v $out_dir/delly/delly.adjusted.vcf -o $out_dir/delly/delly.adjusted2.vcf -f $ref
